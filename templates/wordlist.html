@@ -1,0 +1,9 @@
+{% if word_list %}
+<ul>
+    {% for word in word_list %}
+    <li><a href="{% url 'words:detail' word.id %}">{{ word.word }}</a> - {{ word.pos }}, lemma {{ word.lemma.entry }} ({{ word.lemma.translation }})</li>
+    {% endfor %}
+</ul>
+{% else %}
+    <p>No words are defined.</p>
+{% endif %}

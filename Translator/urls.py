@@ -7,6 +7,7 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'Translator.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
-
+    url(r'^$', 'Translator.views.home', name='index'),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^words/', include('Vocabulary.urls', namespace='words')),
 )
