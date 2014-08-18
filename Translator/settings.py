@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'neo4django.graph_auth',
     'Vocabulary',
 )
 
@@ -62,6 +63,15 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+NEO4J_DATABASES = {
+    'default': {
+        'HOST': 'wp.eccentricity.org',
+        'PORT': 7474,
+        'ENDPOINT': '/db/data'
+    }
+}
+DATABASE_ROUTERS = ['neo4django.utils.Neo4djangoIntegrationRouter']
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/

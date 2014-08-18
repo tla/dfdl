@@ -1,7 +1,9 @@
-{% if word_list %}
+{% if inflection_list %}
 <ul>
-    {% for word in word_list %}
-    <li><a href="{% url 'words:detail' word.id %}">{{ word.word }}</a> - {{ word.pos }}, lemma {{ word.lemma.entry }} ({{ word.lemma.translation }})</li>
+    {% for word in inflection_list %}
+    <li><a href="{% url 'words:detail' word.id %}">{{ word.form }}</a> - {{ word.morphology }}, lemma
+         {{ word.lemma_form.pos }} {{ word.lemma_form.form }} ({{ word.lemma_form.translation }}).
+    </li>
     {% endfor %}
 </ul>
 {% else %}

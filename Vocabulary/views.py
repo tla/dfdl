@@ -3,7 +3,7 @@ from django.core import serializers
 from django.http import HttpResponse
 from django.views import generic
 from django.views.generic.detail import BaseDetailView
-from Vocabulary.models import Word, Encoder
+from Vocabulary.models import *
 
 # Create your views here.
 class JSONResponseMixin(object):
@@ -33,7 +33,7 @@ class WordlistView(generic.ListView):
     template_name = 'wordlist.html'
 
     def get_queryset(self):
-        return Word.objects.order_by('word')
+        return Inflection.objects.order_by('form')
 
 
 class DetailView(JSONResponseMixin, BaseDetailView):
@@ -44,7 +44,20 @@ class DetailView(JSONResponseMixin, BaseDetailView):
 
 class LookupView(JSONResponseMixin, generic.ListView):
     def get_queryset(self):
-        return Word.objects.filter(word=self.args[0])
+        return Word.objects.filter(form=self.args[0])
     def render_to_response(self, context, **kwargs):
         return self.render_to_json_response(context, **kwargs)
+
+
+class LookupLemma(JSONResponseMixin, generic.ListView):
+    def get_queryset(self):
+        return Lemma.objects.filter(form=self.args[0])
+    def render_to_response(self, context, **response_kwargs):
+        return self.render_to_json_response(context, **response_kwargs)
+
+
+# Take a JSON data structure and update or create an entry as requested.
+def update_word(request):
+    pass
+
 
