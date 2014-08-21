@@ -68,7 +68,19 @@ NEO4J_DATABASES = {
     'default': {
         'HOST': 'wp.eccentricity.org',
         'PORT': 7474,
-        'ENDPOINT': '/db/data'
+        'ENDPOINT': '/db/data',
+    }
+}
+NEO4J_TEST_DATABASES = {
+    'default': {
+        'HOST': 'wp.eccentricity.org',
+        'PORT': 7474,
+        'ENDPOINT': '/db/data',
+        'OPTIONS': {
+            'CLEANDB_URI': '/db/data/cleandb/outyougomate',
+            'username': 'lorem',
+            'password': 'ipsum',
+        }
     }
 }
 DATABASE_ROUTERS = ['neo4django.utils.Neo4djangoIntegrationRouter']
@@ -95,3 +107,41 @@ STATIC_URL = '/static/'
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR,  'templates'),
 )
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'mysite.log',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'Vocabulary.views': {
+            'handlers': ['console','file'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+    }
+}
