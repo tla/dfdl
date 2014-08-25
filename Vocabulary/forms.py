@@ -8,19 +8,31 @@ class LexiconEntry(forms.Form):
     form = forms.CharField(label='Word form', max_length=50)
     # TODO CLIENT-SIDE Make POS and morphology into pick lists
     pos = forms.CharField(label='Part of speech', max_length=15)
-    morphology = forms.CharField(label='Morphology', max_length=25)
+    morphology = forms.CharField(label='Morphology', max_length=25, required=False)
     is_lemma = forms.BooleanField(label='This is a lemma form', required=False)
-    lemma_id = forms.IntegerField(show_hidden_initial=True, required=False)
     lemma_form = forms.CharField(label='Lemma form', max_length=50)
     lemma_pos = forms.CharField(label='Lemma part of speech', max_length=15)
-    lemma_morphology = forms.CharField(label='Lemma morphology', max_length=25)
+    lemma_morphology = forms.CharField(label='Lemma morphology', max_length=25, required=False)
     translation = forms.CharField(label='Lemma translation', max_length=200)
 
     # Validation specifics for our part of speech and morphology tags.
-    accepted_pos = ['noun', 'verb', 'adj', 'adv', 'conj', 'prep', 'prel', 'numc', 'numo', 'pdem', 'pref', 'po3']
+    # First all the non-pronouns
+    accepted_pos = ['noun', 'verb', 'adj', 'adv', 'conj', 'intj', 'name', 'numc', 'numo', 'prep']
+    # Then all the non-conjugating pronouns
+    accepted_pos.extend(['pdem', 'pind', 'pide', 'prec', 'pref', 'prel', 'prog'])
+    #  demonstrative, indicative, intensive, reciprocal, reflexive, relative, interrogative
+    # Then all the conjugating pronouns
+    for p in ['pe', 'po']:  # personal, possessive
+        for pers in [1, 2, 3]:
+            if pers < 3 and p == 'po':
+                for num in ['s', 'p']:
+                    accepted_pos.append('%s%d%s' % (p, pers, num))
+            else:
+                accepted_pos.append('%s%d' % (p, pers))
+
     accepted_morphology = {
         'substantive': [['n', 'a', 'g', 'd', 'l', 'b', 'i', 'v'], ['s', 'p']],
-        'verb': [[1, 2, 3], ['s', 'p'], ['p', 'a'], ['i, s'], ['a', 'p']],
+        'verb': [['1', '2', '3'], ['s', 'p'], ['p', 'i', 'a'], ['c', 'i', 'g'], ['a', 'p']],
         'governs': ['a', 'g', 'd', 'l', 'b', 'i'],
         'verbtype': ['part', 'inf']
     }
@@ -45,11 +57,14 @@ class LexiconEntry(forms.Form):
         thepos = self.cleaned_data.get(field + 'pos')
         is_substantive = True
         # No morphology for uninflected words; different morphology for preposition/verb forms
-        if thepos in ['adv', 'conj', 'prep', 'verb']:
+        if thepos in ['adv', 'conj', 'intj', 'prep', 'verb']:
             is_substantive = False
         # Optional morphology for numbers
-        if not value and thepos in ['numc', 'numo']:
-            is_substantive = False
+        elif not value and thepos in ['numc', 'numo']:
+            is_substantive = value
+        elif not value:
+            raise forms.ValidationError("Morphology tag is required for %s type" % thepos)
+
         if thepos == 'prep':
             # Should be +a, +gdb, etc.
             if value[0] != '+':
@@ -86,18 +101,19 @@ class LexiconEntry(forms.Form):
         # Got this far? We're done.
         return orig_value
 
-    def clean_morphology(self):
-        return self.morphology_clean('')
-
-    def clean_lemma_morphology(self):
-        return self.morphology_clean('lemma_')
-
     # Method for sanitizing form data for lemma words
     def clean(self):
-        # If the inflection is a lemma, then lemma_* is not needed other than translation
+        # Morphology depends on part of speech for validation, so test it here.
+        self.morphology_clean('')
+        self.morphology_clean('lemma_')
+
+        # If the inflection is a lemma, then lemma_* is not needed other than translation.
+        # But check to make sure they match.
         if self.cleaned_data['is_lemma']:
-            del self.cleaned_data['lemma_id']
-            del self.cleaned_data['lemma_form']
-            del self.cleaned_data['lemma_pos']
-            del self.cleaned_data['lemma_morphology']
+            for attr in ['form', 'pos', 'morphology']:
+                lemattr = 'lemma_%s' % attr
+                if self.cleaned_data[lemattr] != self.cleaned_data[attr]:
+                    raise forms.ValidationError("Lemma %s '%s' doesn't match main %s '%s'" %
+                                                (attr, self.cleaned_data[lemattr], attr, self.cleaned_data[attr]))
+                del self.cleaned_data[lemattr]
         return self.cleaned_data
