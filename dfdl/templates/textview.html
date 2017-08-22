@@ -1,0 +1,65 @@
+{% extends "index.html" %}
+{% block content %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span>&times;</span>
+        </button>
+        <span id="errmsg"></span>
+    </div>
+    <form id="translation" action="#">
+    <input id="idfield" type="hidden" value="{{ textid }}">
+{% for pgraph in textblocks %}
+    {% set pgraph_id = "paragraph_" ~ pgraph.id() %}
+        <div class="row">
+            <div class="col"><p>Original text</p></div>
+            <div class="col"><label for="{{ pgraph_id }}">Translation goes here</label></div>
+        </div>
+  	    <div class="row">
+    		<div class="col">
+                <p>{% for w in pgraph.words() %}<a tabindex="0" class="origword"
+                                                   data-toggle="popover">{{ w }}</a> {% endfor %}</p>
+            </div>
+    		<div class="col">
+    			<textarea name="{{ pgraph_id }}" id="{{ pgraph_id }}" rows="{{ pgraph.words()|count / 10 }}" onchange="enableSave()"
+                          class="form-control form-control-lg">{{ pgraph.translation if pgraph.translation != None }}</textarea>
+    		</div>
+    	</div>
+{% endfor %}
+        <button id="saveButton" class="btn btn-primary" disabled>Save translation</button>
+    </form>
+
+    <!-- A template for our dictionary forms. Used to construct the tooltip lookup. -->
+    <div id="lookuptemplate" style="display: none">
+    <div class="card">
+        <div class="card-header">__FORM__</div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-5">Lemma</dt><dd class="col-7">__LEMMA__</dd>
+                <dt class="col-5">POS</dt><dd class="col-7">__MORPHOLOGY__</dd>
+                <dt class="col-5">Definition</dt><dd class="col-7">__DEFINITION__</dd>
+            </dl>
+        </div>
+    </div>
+    </div>
+
+    <!-- Our modal for adding a dictionary form. -->
+    <div class="modal fade" id="addmeaning" tabindex="-1" role="dialog" aria-labelledby="#addtitle">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addtitle">Add a definition</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Form goes here, eventually
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitDefinition()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

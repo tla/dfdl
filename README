@@ -1,0 +1,4 @@
+This is a translation assistant, modeled on Duolingo's old "immersion" 
+interface. It requires Python, Flask, and Neo4J in order to run.
+
+Installation instructions will follow in due course.
